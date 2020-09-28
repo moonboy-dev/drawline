@@ -1,0 +1,30 @@
+def line(images, min_length=48, max_length=48):
+    n_images = images.shape[0]
+    image_width = images.shape[1]
+    image_height = images.shape[2]
+    lengths = np.random.uniform(min_length, max_length, n_images)
+    angles = np.random.uniform(-np.pi, np.pi, n_images)
+    widths = lengths * np.cos(angles)
+    heights = lengths * np.sin(angles)
+
+    x_lows = np.clip(-widths+1, 1, image_width-1)
+    x_highs = np.clip(image_width-widths-1, 1, image_width-1)
+    y_lows = np.clip(-heights+1, 1, image_height-1)
+    y_highs = np.clip(image_height-heights-1, 1, image_height-1)
+
+    starts = np.random.uniform(np.stack([x_lows, y_lows], axis=1), np.stack([x_highs, y_highs], axis=1), [n_images, 2])
+
+    ends = starts + np.stack([widths, heights], axis=1)
+
+    starts = starts.astype(np.uint32)
+    ends = ends.astype(np.uint32)
+
+    for i in range(n_images):
+        imgdata = images[i]
+        img = Image.frombuffer("L", imgdata.shape, imgdata)
+        img.readonly = False
+        d = ImageDraw.Draw(img)
+        d.line([tuple(starts[i]), tuple(ends[i])], fill=255, width=6)
+
+image = np.zeros([1, 96, 96], dtype=np.uint8)
+line(image)
